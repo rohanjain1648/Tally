@@ -3,7 +3,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
 const client = new Client({ name: "smoke", version: "1.0.0" });
-await client.connect(new StdioClientTransport({ command: "npx", args: ["tsx", "server/mcp.ts"], env: { ...process.env } as Record<string, string>, shell: true }));
+await client.connect(new StdioClientTransport({ command: "npx", args: ["tsx", "server/mcp.ts"], env: { ...process.env } as Record<string, string>}));
 
 const { tools } = await client.listTools();
 console.log(`tools (${tools.length}):`, tools.map((t) => t.name).join(", "));

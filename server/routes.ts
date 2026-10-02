@@ -1,6 +1,5 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
-import type Anthropic from "@anthropic-ai/sdk";
 import { aiReady, config } from "./config.js";
 import { live, paypal, PayPalError } from "./paypal/index.js";
 import { cashSummary, clientsFrom, invoiceView } from "./books.js";
@@ -8,11 +7,11 @@ import { store } from "./store.js";
 import { bus, type UiEvent } from "./bus.js";
 import { decide, gate, runAsHuman } from "./agent/actions.js";
 import { conversationView, createConversation, sendMessage, startBriefing, type ConvEvent } from "./agent/runtime.js";
-import { extractInvoice } from "./ai/extract.js";
-import { AiUnavailableError } from "./ai/claude.js";
+import { assertImage, describeAttachment, extractInvoice } from "./ai/extract.js";
+import { AiUnavailableError } from "./ai/groq.js";
 import { defaultPolicy, WRITE_TOOLS, type Policy } from "./policy.js";
 import { handleWebhookEvent } from "./webhooks.js";
-import { claudeTools } from "./agent/tools.js";
+import { toolSpecs } from "./agent/tools.js";
 
 export const api = Router();
 
@@ -58,7 +57,9 @@ api.get(
     currency: config.currency,
     paypalMode: config.paypal.mode,
     aiReady: aiReady(),
+    aiProvider: config.ai.provider,
     model: config.ai.model,
+    visionModel: config.ai.visionModel,
     webhookVerification: Boolean(config.paypal.webhookId),
   })),
 );
@@ -175,20 +176,21 @@ const messageBody = z.object({
 
 api.post(
   "/conversations/:id/messages",
-  h((req, res) => {
+  h(async (req, res) => {
     if (!aiReady()) throw new AiUnavailableError();
     const conv = getConv(String(req.params.id));
     const { text, file } = messageBody.parse(req.body);
     if (!text.trim() && !file) throw new z.ZodError([{ code: "custom", path: ["text"], message: "Message is empty", input: text }]);
-    const content: Anthropic.Beta.BetaContentBlockParam[] = [];
-    if (file?.mediaType.startsWith("image/")) {
-      content.push({ type: "image", source: { type: "base64", media_type: file.mediaType as "image/png", data: file.base64 } });
-    } else if (file?.mediaType === "application/pdf") {
-      content.push({ type: "document", source: { type: "base64", media_type: "application/pdf", data: file.base64 } });
+    let content = text.trim();
+    if (file) {
+      assertImage(file);
+      const transcript = await describeAttachment(file);
+      content = `${content || "Please process the attached photo."}
+
+[Attached photo, read by Tally: ${transcript}]`;
     }
-    content.push({ type: "text", text: text.trim() || "Please process the attached file." });
     try {
-      sendMessage(conv, content.length === 1 ? content[0].type === "text" ? (content[0] as { text: string }).text : content : content);
+      sendMessage(conv, content);
     } catch (err) {
       res.status(409).json({ error: (err as Error).message });
       return;
@@ -229,7 +231,7 @@ api.post(
 
 // ───────────── MCP bridge (used by server/mcp.ts) ─────────────
 
-api.get("/mcp/tools", h(() => claudeTools()));
+api.get("/mcp/tools", h(() => toolSpecs()));
 
 /** External agents call tools here. Same gate as the built-in agent: reads run, writes are policy-checked. */
 api.post(

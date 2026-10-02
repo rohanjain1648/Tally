@@ -1,5 +1,4 @@
 import { z } from "zod";
-import type Anthropic from "@anthropic-ai/sdk";
 import { config } from "../config.js";
 import { paypal, type Invoice } from "../paypal/index.js";
 import { cashSummary, clientsFrom, invoiceView, isOpen, isOverdue, isPaid } from "../books.js";
@@ -8,7 +7,7 @@ import type { WriteTool } from "../policy.js";
 
 const reason = z
   .string()
-  .min(3)
+  .optional()
   .describe("One short sentence, written for the business owner, explaining why you are taking this action.");
 const invoiceId = z.string().describe("PayPal invoice id (e.g. INV2-XXXX) or the invoice number shown to the user.");
 const lineItem = z.object({
@@ -331,14 +330,20 @@ export const TOOLS: ToolDef[] = [
 
 export const toolByName = new Map(TOOLS.map((t) => [t.name, t]));
 
-/** Tool definitions in the shape the Messages API expects. */
-export function claudeTools(): Anthropic.Beta.BetaTool[] {
+export interface ToolSpec {
+  name: string;
+  description: string;
+  input_schema: Record<string, unknown>;
+}
+
+/** Provider-neutral tool definitions (JSON Schema). Groq gets them as functions; the MCP bridge as-is. */
+export function toolSpecs(): ToolSpec[] {
   return TOOLS.map((t) => {
     const { $schema: _ignored, ...schema } = z.toJSONSchema(t.schema, { io: "input" }) as Record<string, unknown>;
     return {
       name: t.name,
       description: t.kind === "write" ? `${t.description} [Guarded: subject to the owner's approval policy.]` : t.description,
-      input_schema: { type: "object", ...schema } as Anthropic.Beta.BetaTool.InputSchema,
+      input_schema: { type: "object", ...schema },
     };
   });
 }

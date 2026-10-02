@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import type Anthropic from "@anthropic-ai/sdk";
 import { config } from "./config.js";
 import type { Invoice, PaymentLink, Transaction } from "./paypal/types.js";
 import { defaultPolicy, type Policy } from "./policy.js";
+import type { ChatMessage } from "./ai/groq.js";
 
 export type ActionSource = "agent" | "briefing" | "human" | "webhook" | "mcp";
 
@@ -35,7 +35,7 @@ export interface Conversation {
   id: string;
   title: string;
   kind: "chat" | "briefing";
-  messages: Anthropic.Beta.BetaMessageParam[];
+  messages: ChatMessage[];
   /** Tool calls from the latest assistant turn that are waiting on a human decision. */
   pendingTurn: { toolUseIds: string[]; results: Record<string, ToolOutcome | null> } | null;
   status: "idle" | "running" | "awaiting_approval" | "error";
@@ -63,6 +63,8 @@ export interface MockState {
 }
 
 interface Data {
+  /** 2 = OpenAI-compatible chat history (Groq). Older saves held a different history format and are dropped. */
+  historyVersion?: number;
   policy: Policy;
   conversations: Record<string, Conversation>;
   approvals: Approval[];
@@ -73,6 +75,7 @@ interface Data {
 }
 
 const empty = (): Data => ({
+  historyVersion: 2,
   policy: defaultPolicy(),
   conversations: {},
   approvals: [],
@@ -92,7 +95,13 @@ class Store {
     this.data = empty();
     try {
       if (fs.existsSync(this.file)) {
-        this.data = { ...empty(), ...JSON.parse(fs.readFileSync(this.file, "utf8")) };
+        const saved = JSON.parse(fs.readFileSync(this.file, "utf8"));
+        this.data = { ...empty(), ...saved };
+        if (saved.historyVersion !== 2) {
+          this.data.conversations = {};
+          this.data.briefing = null;
+          this.data.historyVersion = 2;
+        }
         this.data.policy = { ...defaultPolicy(), ...this.data.policy, rules: { ...defaultPolicy().rules, ...this.data.policy?.rules } };
       }
     } catch (err) {
