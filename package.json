@@ -9,7 +9,8 @@
     "test": "vitest run --root . server",
     "typecheck": "tsc --noEmit",
     "mcp": "tsx server/mcp.ts",
-    "mcp:test": "tsx server/mcp.test-client.ts"
+    "mcp:test": "tsx server/mcp.test-client.ts",
+    "mock:groq": "node scripts/mock-groq.mjs"
   },
   "license": "MIT",
   "type": "module",

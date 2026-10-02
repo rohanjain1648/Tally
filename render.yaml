@@ -9,7 +9,7 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 22
-      - key: ANTHROPIC_API_KEY
+      - key: GROQ_API_KEY
         sync: false
       - key: PAYPAL_CLIENT_ID
         sync: false

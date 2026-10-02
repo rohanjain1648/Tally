@@ -29,7 +29,7 @@ if (fs.existsSync(webDist)) {
 app.listen(config.port, () => {
   console.log(`\n  Tally API  →  http://localhost:${config.port}`);
   console.log(`  PayPal     →  ${config.paypal.mode === "sandbox" ? "live sandbox (api-m.sandbox.paypal.com)" : "built-in simulator (mock mode)"}`);
-  console.log(`  Claude     →  ${aiReady() ? config.ai.model : "NOT CONFIGURED — set ANTHROPIC_API_KEY"}\n`);
+  console.log(`  Groq       →  ${aiReady() ? `${config.ai.model} (vision: ${config.ai.visionModel})` : "NOT CONFIGURED — set GROQ_API_KEY"}\n`);
 });
 
 process.on("SIGINT", () => {
