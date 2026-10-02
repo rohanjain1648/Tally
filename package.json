@@ -1,0 +1,43 @@
+{
+  "name": "tally",
+  "version": "1.0.0",
+  "description": "Tally — a guarded AI back office for solo businesses, built on PayPal + Groq",
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c green,cyan \"tsx watch server/index.ts\" \"vite\"",
+    "build": "vite build",
+    "start": "tsx server/index.ts",
+    "test": "vitest run --root . server",
+    "typecheck": "tsc --noEmit",
+    "mcp": "tsx server/mcp.ts",
+    "mcp:test": "tsx server/mcp.test-client.ts"
+  },
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.31.0",
+    "ag-grid-community": "^36.2.0",
+    "ag-grid-react": "^36.2.0",
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1",
+    "groq-sdk": "^1.6.0",
+    "lucide-react": "^1.49.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tsx": "^4.23.15",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "concurrently": "^10.0.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.2",
+    "vitest": "^5.0.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
