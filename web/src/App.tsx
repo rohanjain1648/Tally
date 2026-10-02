@@ -84,7 +84,7 @@ export function App() {
             {status.paypalMode === "sandbox" ? "PayPal sandbox" : "PayPal simulator"}
             <br />
             <span className={`dot ${status.aiReady ? "dot-live" : "dot-off"}`} />
-            {status.aiReady ? "Claude connected" : "Claude not connected"}
+            {status.aiReady ? "Groq connected" : "Groq not connected"}
           </div>
         )}
       </nav>
@@ -92,7 +92,7 @@ export function App() {
       <main id="main" tabIndex={-1}>
         {status && !status.aiReady && (
           <div className="banner">
-            Claude isn’t connected, so Capture, Ask Tally and the briefing are switched off. Add <code>ANTHROPIC_API_KEY</code> to{" "}
+            Groq isn’t connected, so Capture, Ask Tally and the briefing are switched off. Add <code>GROQ_API_KEY</code> to{" "}
             <code>.env</code> and restart.
           </div>
         )}

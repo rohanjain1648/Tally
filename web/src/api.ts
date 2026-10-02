@@ -90,6 +90,7 @@ export interface Dashboard {
 }
 
 export interface Status {
+  aiProvider?: string;
   businessName: string;
   currency: string;
   paypalMode: "sandbox" | "mock";
@@ -168,7 +169,7 @@ export const api = {
 
 export function readFile(file: File): Promise<FilePayload> {
   return new Promise((resolve, reject) => {
-    if (file.size > 10 * 1024 * 1024) return reject(new Error("That file is over 10 MB. Try a smaller photo or PDF."));
+    if (file.size > 10 * 1024 * 1024) return reject(new Error("That file is over 10 MB. Try a smaller photo."));
     const reader = new FileReader();
     reader.onload = () => {
       const url = String(reader.result);

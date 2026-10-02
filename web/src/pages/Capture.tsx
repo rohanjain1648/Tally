@@ -102,7 +102,7 @@ export function Capture() {
     <div className="page">
       <header className="page-head">
         <h1>Capture</h1>
-        <p>Snap a job sheet, drop a quote, or paste the client’s message. Tally turns it into a PayPal invoice you check before it goes.</p>
+        <p>Snap a job sheet, drop a photo of a quote, or paste the client’s message. Tally turns it into a PayPal invoice you check before it goes.</p>
       </header>
 
       <div className="capture-grid">
@@ -131,11 +131,11 @@ export function Capture() {
             ) : (
               <button className="drop-cta" onClick={() => inputRef.current?.click()}>
                 <FileUp size={26} />
-                <strong>Add a photo or PDF</strong>
+                <strong>Add a photo</strong>
                 <span>Handwritten job sheets, quotes and receipts all work. Drag it here or tap to choose.</span>
               </button>
             )}
-            <input ref={inputRef} type="file" accept="image/*,application/pdf" capture="environment" hidden onChange={(e) => void pick(e.target.files?.[0])} />
+            <input ref={inputRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => void pick(e.target.files?.[0])} />
           </div>
 
           <label className="field">

@@ -133,13 +133,13 @@ export function Agent({ conversationId }: { conversationId?: string }) {
             </span>
           )}
           <div className="composer-row">
-            <button type="button" className="icon-btn" aria-label="Attach a photo or PDF" onClick={() => fileRef.current?.click()} disabled={busy || blocked}>
+            <button type="button" className="icon-btn" aria-label="Attach a photo" onClick={() => fileRef.current?.click()} disabled={busy || blocked}>
               <Paperclip size={18} />
             </button>
             <input
               ref={fileRef}
               type="file"
-              accept="image/*,application/pdf"
+              accept="image/*"
               hidden
               onChange={async (e) => {
                 const f = e.target.files?.[0];
